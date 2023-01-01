@@ -2,6 +2,11 @@ import os
 import random
 import pygame
 
+pygame.init()
+size = width, height = 1000, 800
+screen = pygame.display.set_mode(size)
+pygame.display.set_caption('2d game')
+
 
 class Board:
     # создание поля
@@ -67,13 +72,63 @@ def load_image(name, colorkey=None):
     return image
 
 
-pygame.init()
+tile_size = 50
 
-size = width, height = 1000, 800
-screen = pygame.display.set_mode(size)
-pygame.display.set_caption('2d game')
-board = Board(10, 8)
-board.set_view(0, 0, 100)
+
+class Level():
+    def __init__(self, data):
+        self.tile_list = []
+        dirt_img = load_image('chocoMid.png', 'black')
+        dirt_img = pygame.transform.scale(dirt_img, (tile_size, tile_size))
+        grass_img = load_image('chocoCenter.png')
+        grass_img = pygame.transform.scale(grass_img, (tile_size, tile_size))
+        row_count = 0
+        for row in data:
+            col_count = 0
+            for tile in row:
+                if tile == 1:
+                    img_rect = dirt_img.get_rect()
+                    img_rect.x = col_count * tile_size
+                    img_rect.y = row_count * tile_size
+                    tile = (dirt_img, img_rect)
+                    self.tile_list.append(tile)
+                if tile == 2:
+                    img_rect = dirt_img.get_rect()
+                    img_rect.x = col_count * tile_size
+                    img_rect.y = row_count * tile_size
+                    tile = (grass_img, img_rect)
+                    self.tile_list.append(tile)
+                col_count += 1
+            row_count += 1
+
+    def create(self):
+        for tile in self.tile_list:
+            screen.blit(tile[0], tile[1])
+
+
+level_data = [
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 1, 2, 0, 0, 0, 2, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    [1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1],
+    [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+]
+
+level = Level(level_data)
+
+board = Board(20, 16)
+board.set_view(0, 0, 50)
 # декор
 sun = load_image('sunc.png', 'black')
 sun = pygame.transform.scale(sun, (150, 150))
@@ -98,6 +153,8 @@ while running:
     screen.blit(cloud2, (500, 80))
     screen.blit(cloud3, (800, 50))
     screen.blit(cloud4, (200, 50))
-    board.render(screen)
+
+    level.create()
+
     pygame.display.update()
 pygame.quit()
