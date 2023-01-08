@@ -47,7 +47,7 @@ class Player():
         # контроль скорости смены картинок в анимации
         self.speed_control = 0
         for num in range(1, 5):
-            player_img_r = load_image(f'pers{num}.png', 'black')
+            player_img_r = load_image(f'pers{num}.png', (245, 245, 245))
             player_img_r = pygame.transform.scale(player_img_r, (40, 40))
             player_img_l = pygame.transform.flip(player_img_r, True, False)
             self.right_imgs.append(player_img_r)
