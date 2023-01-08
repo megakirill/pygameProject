@@ -10,7 +10,6 @@ size = width, height = 1000, 800
 screen = pygame.display.set_mode(size)
 pygame.display.set_caption('2d game')
 
-
 # функция загрузки изображения
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
