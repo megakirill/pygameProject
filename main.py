@@ -1,5 +1,6 @@
 import os
 import pygame
+import time
 
 pygame.init()
 
@@ -9,6 +10,8 @@ fps = 60
 size = width, height = 1000, 800
 screen = pygame.display.set_mode(size)
 pygame.display.set_caption('2d game')
+
+trying = 1
 
 
 # класс для работы с клеточным полем
@@ -186,17 +189,30 @@ class Player():
                         self.velocity_y = 0
                         self.on_air = False
 
+            global trying
             # проверка на взаимодействия с мобами
             if pygame.sprite.spritecollide(self, mob_group, False):
                 game_over = -1
-
+                transit_time = time.time() - time_now
+                with open("records.txt", "w", encoding='utf-8') as file:
+                    file.write(
+                        f'Попытка №{trying}, результат: Поражение, время прохождения: {transit_time}, причина смерти: Монстр' + '\n')
+                trying += 1
             # проверка на взаимодействия с шипами
             if pygame.sprite.spritecollide(self, spikes_group, False):
                 game_over = -1
-
+                transit_time = time.time() - time_now
+                with open("records.txt", "w", encoding='utf-8') as file:
+                    file.write(
+                        f'Попытка №{trying}, результат: Поражение, время прохождения: {transit_time}, причина смерти: Шипы' + '\n')
+                trying += 1
             # проверка на взаимодействия с вратами
             if pygame.sprite.spritecollide(self, gates_group, False):
                 game_over = 1
+                transit_time = time.time() - time_now
+                with open("records.txt", "w") as file:
+                    file.write(f'Попытка №{trying}, результат: Победа, время прохождения: {transit_time}' + '\n')
+                trying += 1
 
             # обновление координат
             self.rect.x += delta_x
@@ -320,7 +336,7 @@ level_data = [
     [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2],
-    [0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 2, 2],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 2, 2],
     [0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 2, 2],
     [0, 0, 0, 0, 1, 2, 4, 4, 4, 4, 4, 4, 2, 1, 0, 0, 0, 0, 2, 2],
     [1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2, 2],
@@ -347,6 +363,7 @@ cloud3 = pygame.transform.scale(cloud3, (150, 120))
 cloud4 = load_image('cloud4.png', 'white')
 cloud4 = pygame.transform.scale(cloud4, (200, 150))
 running = True
+time_now = time.time()
 while running:
 
     clock.tick(fps)
