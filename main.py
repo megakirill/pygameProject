@@ -3,6 +3,9 @@ import pygame
 import time
 import start
 
+size = width, height = 1000, 800
+screen = pygame.display.set_mode(size)
+
 
 # функция загрузки изображения
 def load_image(name, colorkey=None):
@@ -134,6 +137,7 @@ class Player():
                         self.on_air = False
 
             global trying
+            trying = 0
             # проверка на взаимодействия с мобами
             if pygame.sprite.spritecollide(self, mob_group, False):
                 game_over = -1
@@ -150,6 +154,8 @@ class Player():
                     file.write(
                         f'Попытка №{trying}, результат: Поражение, время прохождения: {transit_time}, причина смерти: Шипы' + '\n')
                 trying += 1
+                a = start.finish_menu(screen)
+                g()
             # проверка на взаимодействия с вратами
             if pygame.sprite.spritecollide(self, gates_group, False):
                 game_over = 1
@@ -334,8 +340,7 @@ pygame.init()
 clock = pygame.time.Clock()
 fps = 60
 
-size = width, height = 1000, 800
-screen = pygame.display.set_mode(size)
+
 pygame.display.set_caption('2d game')
 
 player = Player(100, height - 175)
@@ -343,39 +348,52 @@ mob_group = pygame.sprite.Group()
 spikes_group = pygame.sprite.Group()
 gates_group = pygame.sprite.Group()
 level = Level(level_data)
-
-sun = load_image('sunc.png', 'black')
-sun = pygame.transform.scale(sun, (150, 150))
-cloud = load_image('cloud.png', 'white')
-cloud = pygame.transform.scale(cloud, (120, 120))
-cloud2 = load_image('cloud2.png', 'white')
-cloud2 = pygame.transform.scale(cloud2, (200, 150))
-cloud3 = load_image('cloud3.png', 'white')
-cloud3 = pygame.transform.scale(cloud3, (150, 120))
-cloud4 = load_image('cloud4.png', 'white')
-cloud4 = pygame.transform.scale(cloud4, (200, 150))
-running = True
 time_now = time.time()
-while running:
+game_over = False
+def game(game_over):
+    sun = load_image('sunc.png', 'black')
+    sun = pygame.transform.scale(sun, (150, 150))
+    cloud = load_image('cloud.png', 'white')
+    cloud = pygame.transform.scale(cloud, (120, 120))
+    cloud2 = load_image('cloud2.png', 'white')
+    cloud2 = pygame.transform.scale(cloud2, (200, 150))
+    cloud3 = load_image('cloud3.png', 'white')
+    cloud3 = pygame.transform.scale(cloud3, (150, 120))
+    cloud4 = load_image('cloud4.png', 'white')
+    cloud4 = pygame.transform.scale(cloud4, (200, 150))
+    running = True
+    while running:
 
-    clock.tick(fps)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+        clock.tick(fps)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
 
-    screen.fill((128, 166, 255))
-    screen.blit(sun, (20, 20))
-    screen.blit(cloud, (100, 20))
-    screen.blit(cloud2, (500, 80))
-    screen.blit(cloud3, (800, 50))
-    screen.blit(cloud4, (200, 50))
-    level.create()
-    if game_over == False:
-        mob_group.update()
-    mob_group.draw(screen)
-    spikes_group.draw(screen)
+        screen.fill((128, 166, 255))
+        screen.blit(sun, (20, 20))
+        screen.blit(cloud, (100, 20))
+        screen.blit(cloud2, (500, 80))
+        screen.blit(cloud3, (800, 50))
+        screen.blit(cloud4, (200, 50))
+        level.create()
+        if game_over == False:
+            mob_group.update()
+        mob_group.draw(screen)
+        spikes_group.draw(screen)
 
-    game_over = player.update(game_over)
+        game_over = player.update(game_over)
 
-    pygame.display.update()
-pygame.quit()
+        pygame.display.update()
+    pygame.quit()
+
+def g():
+    global  player
+    global mob_group
+    global spikes_group
+    global gates_group
+
+    player = Player(100, height - 175)
+    mob_group = pygame.sprite.Group()
+    spikes_group = pygame.sprite.Group()
+    gates_group = pygame.sprite.Group()
+game(game_over)

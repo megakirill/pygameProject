@@ -129,3 +129,68 @@ def menu():
                     screen.blit(hard, hard_a)
         pygame.display.flip()
     return level
+
+
+def finish_menu(screen):
+    pygame.draw.rect(screen, (192, 64, 0), (400, 200, 175, 245))
+    f1 = pygame.font.Font(None, 25)
+    text1 = f1.render('Меню', True,
+                      (252, 168, 159))
+    f2 = pygame.font.Font(None, 25)
+    text2 = f1.render('Играть заново', True,
+                      (252, 168, 159))
+    f3 = pygame.font.Font(None, 25)
+    text3 = f1.render('Выйти в меню', True,
+                      (252, 168, 159))
+    f4 = pygame.font.Font(None, 25)
+    text4 = f1.render('Выйти из игры', True,
+                      (252, 168, 159))
+
+    screen.blit(text1, (467, 235))
+    screen.blit(text4, (428, 370))
+    pygame.display.flip()
+    while True:
+        pygame.draw.rect(screen, (192, 64, 0), (400, 200, 175, 245))
+        f1 = pygame.font.Font(None, 25)
+        text1 = f1.render('Меню', True,
+                          (252, 168, 159))
+        screen.blit(text1, (467, 235))
+        screen.blit(text2, (427, 290))
+        screen.blit(text3, (427, 330))
+        screen.blit(text4, (428, 370))
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+            if event.type == pygame.MOUSEMOTION:
+                pos = event.pos
+                if pos[0] > 425 and pos[1] > 286 and pos[0] < 549 and pos[1] < 307:
+                    f2 = pygame.font.Font(None, 25)
+                    text2 = f1.render('Играть заново', True,
+                                      (255, 216, 212))
+                else:
+                    f2 = pygame.font.Font(None, 25)
+                    text2 = f1.render('Играть заново', True,
+                                      (252, 168, 159))
+                if pos[0] > 426 and pos[1] > 330 and pos[0] < 547 and pos[1] < 347:
+                    f3 = pygame.font.Font(None, 25)
+                    text3 = f1.render('Выйти в меню', True,
+                                      (255, 216, 212))
+                else:
+                    f3 = pygame.font.Font(None, 25)
+                    text3 = f1.render('Выйти в меню', True,
+                                      (252, 168, 159))
+                if pos[0] > 426 and pos[1] > 370 and pos[0] < 553 and pos[1] < 384:
+                    f4 = pygame.font.Font(None, 25)
+                    text4 = f1.render('Выйти из игры', True,
+                                      (255, 216, 212))
+                else:
+                    f4 = pygame.font.Font(None, 25)
+                    text4 = f1.render('Выйти из игры', True,
+                                      (252, 168, 159))
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pos = event.pos
+                if pos[0] > 426 and pos[1] > 370 and pos[0] < 553 and pos[1] < 384:
+                    pygame.quit()
+                if pos[0] > 425 and pos[1] > 286 and pos[0] < 549 and pos[1] < 307:
+                    return 1
+        pygame.display.flip()
