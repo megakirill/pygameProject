@@ -192,5 +192,5 @@ def finish_menu(screen):
                 if pos[0] > 426 and pos[1] > 370 and pos[0] < 553 and pos[1] < 384:
                     pygame.quit()
                 if pos[0] > 425 and pos[1] > 286 and pos[0] < 549 and pos[1] < 307:
-                    return 1
+                    return -1
         pygame.display.flip()

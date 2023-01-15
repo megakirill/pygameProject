@@ -43,6 +43,9 @@ class Button():
 
 class Player():
     def __init__(self, x, y):
+        self.reset(x, y)
+
+    def reset(self, x, y):
         # список для картинок персонажа, направленных в правую сторону
         self.right_imgs = []
         # список для картинок персонажа, направленных в левую сторону
@@ -154,8 +157,6 @@ class Player():
                     file.write(
                         f'Попытка №{trying}, результат: Поражение, время прохождения: {transit_time}, причина смерти: Шипы' + '\n')
                 trying += 1
-                a = start.finish_menu(screen)
-                g()
             # проверка на взаимодействия с вратами
             if pygame.sprite.spritecollide(self, gates_group, False):
                 game_over = 1
@@ -350,50 +351,38 @@ gates_group = pygame.sprite.Group()
 level = Level(level_data)
 time_now = time.time()
 game_over = False
-def game(game_over):
-    sun = load_image('sunc.png', 'black')
-    sun = pygame.transform.scale(sun, (150, 150))
-    cloud = load_image('cloud.png', 'white')
-    cloud = pygame.transform.scale(cloud, (120, 120))
-    cloud2 = load_image('cloud2.png', 'white')
-    cloud2 = pygame.transform.scale(cloud2, (200, 150))
-    cloud3 = load_image('cloud3.png', 'white')
-    cloud3 = pygame.transform.scale(cloud3, (150, 120))
-    cloud4 = load_image('cloud4.png', 'white')
-    cloud4 = pygame.transform.scale(cloud4, (200, 150))
-    running = True
-    while running:
-
-        clock.tick(fps)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-        screen.fill((128, 166, 255))
-        screen.blit(sun, (20, 20))
-        screen.blit(cloud, (100, 20))
-        screen.blit(cloud2, (500, 80))
-        screen.blit(cloud3, (800, 50))
-        screen.blit(cloud4, (200, 50))
-        level.create()
-        if game_over == False:
-            mob_group.update()
-        mob_group.draw(screen)
-        spikes_group.draw(screen)
-
-        game_over = player.update(game_over)
-
-        pygame.display.update()
-    pygame.quit()
-
-def g():
-    global  player
-    global mob_group
-    global spikes_group
-    global gates_group
-
-    player = Player(100, height - 175)
-    mob_group = pygame.sprite.Group()
-    spikes_group = pygame.sprite.Group()
-    gates_group = pygame.sprite.Group()
-game(game_over)
+sun = load_image('sunc.png', 'black')
+sun = pygame.transform.scale(sun, (150, 150))
+cloud = load_image('cloud.png', 'white')
+cloud = pygame.transform.scale(cloud, (120, 120))
+cloud2 = load_image('cloud2.png', 'white')
+cloud2 = pygame.transform.scale(cloud2, (200, 150))
+cloud3 = load_image('cloud3.png', 'white')
+cloud3 = pygame.transform.scale(cloud3, (150, 120))
+cloud4 = load_image('cloud4.png', 'white')
+cloud4 = pygame.transform.scale(cloud4, (200, 150))
+running = True
+while running:
+    clock.tick(fps)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+    screen.fill((128, 166, 255))
+    screen.blit(sun, (20, 20))
+    screen.blit(cloud, (100, 20))
+    screen.blit(cloud2, (500, 80))
+    screen.blit(cloud3, (800, 50))
+    screen.blit(cloud4, (200, 50))
+    level.create()
+    if game_over == 0:
+        mob_group.update()
+    if game_over == -1:
+        if start.finish_menu(screen) == -1:
+            player.reset(100, height - 175)
+            print(1)
+            game_over = 0
+    mob_group.draw(screen)
+    spikes_group.draw(screen)
+    game_over = player.update(game_over)
+    pygame.display.update()
+pygame.quit()
