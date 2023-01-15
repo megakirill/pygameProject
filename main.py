@@ -1,6 +1,61 @@
 import os
 import pygame
-import start
+
+pygame.init()
+
+clock = pygame.time.Clock()
+fps = 60
+
+size = width, height = 1000, 800
+screen = pygame.display.set_mode(size)
+pygame.display.set_caption('2d game')
+
+
+# класс для работы с клеточным полем
+class Board:
+    # создание поля
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+        self.board = [[0] * width for _ in range(height)]
+        # значения по умолчанию
+        self.left = 10
+        self.top = 10
+        self.cell_size = 30
+
+    # настройка внешнего вида
+    def set_view(self, left, top, cell_size):
+        self.left = left
+        self.top = top
+        self.cell_size = cell_size
+
+    def render(self, screen):
+        line_counter = 0
+        for j in range(self.height):
+            for i in range(self.width):
+                pygame.draw.rect(screen, (255, 255, 255),
+                                 (self.left + (self.cell_size * i), self.top + (self.cell_size * line_counter),
+                                  self.cell_size,
+                                  self.cell_size), 1)
+            line_counter += 1
+
+    def on_click(self, cell):
+        print(cell)
+
+    def get_cell(self, mouse_pos):
+        cell_x = (mouse_pos[0] - self.left) // self.cell_size
+        cell_y = (mouse_pos[1] - self.top) // self.cell_size
+        if cell_x < 0 or cell_x >= self.width or cell_y < 0 or cell_y >= self.height:
+            return None
+        return cell_x, cell_y
+
+    def get_click(self, mouse_pos):
+        cell = self.get_cell(mouse_pos)
+        if cell:
+            self.on_click(cell)
+        else:
+            print(cell)
+
 
 # функция загрузки изображения
 def load_image(name, colorkey=None):
@@ -28,6 +83,14 @@ tile_size = 50
 game_over = False
 
 
+class Button():
+    def __init__(self, x, y, image):
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
+
 class Player():
     def __init__(self, x, y):
         # список для картинок персонажа, направленных в правую сторону
@@ -39,7 +102,7 @@ class Player():
         # контроль скорости смены картинок в анимации
         self.speed_control = 0
         for num in range(1, 5):
-            player_img_r = load_image(f'pers{num}.png', (245, 245, 245))
+            player_img_r = load_image(f'pers{num}.png', 'black')
             player_img_r = pygame.transform.scale(player_img_r, (40, 40))
             player_img_l = pygame.transform.flip(player_img_r, True, False)
             self.right_imgs.append(player_img_r)
@@ -53,7 +116,7 @@ class Player():
         self.rect.y = y
         self.player_width = self.player_img.get_width()
         self.player_height = self.player_img.get_height()
-
+        self.on_air = True
         self.velocity_y = 0
         # проверка на то, в какую сторону смотрит персонаж (по умолчанию: вправо)
         self.is_right = True
@@ -75,8 +138,8 @@ class Player():
                 delta_x += 5
                 self.speed_control += 1
                 self.is_right = True
-            if event[pygame.K_SPACE] and self.is_jumped == False:
-                self.velocity_y -= 13
+            if event[pygame.K_SPACE] and self.is_jumped == False and self.on_air == False:
+                self.velocity_y -= 15
                 self.is_jumped = True
             if event[pygame.K_SPACE] == False:
                 self.is_jumped = False
@@ -106,6 +169,8 @@ class Player():
             delta_y += self.velocity_y
 
             # проверка на пересечения/взаимодействия
+            self.on_air = True
+
             for tile in level.tile_list:
                 # проверка по x-у
                 if tile[1].colliderect(self.rect.x + delta_x, self.rect.y, self.player_width, self.player_height):
@@ -119,6 +184,7 @@ class Player():
                     elif self.velocity_y >= 0:
                         delta_y = tile[1].top - self.rect.bottom
                         self.velocity_y = 0
+                        self.on_air = False
 
             # проверка на взаимодействия с мобами
             if pygame.sprite.spritecollide(self, mob_group, False):
@@ -142,6 +208,9 @@ class Player():
             if self.rect.bottom > height:
                 self.rect.bottom = height
                 delta_y = 0
+            if self.rect.top < 0:
+                self.rect.top = 0
+                delta_x = 0
         elif game_over:
             self.player_img = self.ghost_img
             if self.rect.y > 200:
@@ -155,7 +224,7 @@ class Player():
 class Mob(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
-        self.image = load_image('mob.png', (251, 253, 252))
+        self.image = load_image('mob.png', 'black')
         self.image = pygame.transform.scale(self.image, (40, 40))
         self.rect = self.image.get_rect()
         self.rect.x = x
@@ -221,81 +290,34 @@ class Level():
 
 
 # список с элементами для создания уровня
-# 0 - пустая клетка, 1 - клетка с землей, 2 - клетка с грязью, 3 - монстр
-dif = start.menu()
-if dif == 'easy':
-    level_data = [
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 4, 0, 0, 0, 0, 1, 1, 1, 1],
-        [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 4, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 2, 2],
-        [0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 2, 2],
-        [0, 0, 0, 0, 1, 2, 4, 4, 4, 4, 4, 4, 2, 1, 0, 0, 0, 0, 2, 2],
-        [1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2, 2],
-        [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
-    ]
-elif dif == 'medium':
-    level_data = [
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-        [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 3, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 2, 2],
-        [0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 2, 2],
-        [0, 0, 0, 0, 1, 2, 4, 4, 4, 4, 4, 4, 2, 1, 0, 0, 0, 0, 2, 2],
-        [1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2, 2],
-        [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
-    ]
-elif dif == 'hard':
-    level_data = [
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 3, 0, 0, 0, 0, 1, 1, 1, 1],
-        [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 3, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 4, 2, 2],
-        [0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 4, 0, 0, 0, 1, 2, 2],
-        [4, 4, 0, 4, 1, 2, 4, 4, 4, 4, 4, 4, 2, 1, 4, 4, 4, 2, 2, 2],
-        [1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 2, 2, 2],
-        [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
-    ]
-
-
-pygame.init()
-
-clock = pygame.time.Clock()
-fps = 60
-
-size = width, height = 1000, 800
-screen = pygame.display.set_mode(size)
-pygame.display.set_caption('2d game')
+# 0 - пустая клетка, 1 - клетка с землей, 2 - клетка с грязью, 3 - монстр, 4 - шипы
+level_data = [
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 3, 0, 0, 0, 0, 1, 1, 1, 1],
+    [0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 3, 0, 0, 0, 0],
+    [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 4, 2, 2],
+    [0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 4, 0, 0, 0, 1, 2, 2],
+    [4, 4, 0, 4, 1, 2, 4, 4, 4, 4, 4, 4, 2, 1, 4, 4, 4, 2, 2, 2],
+    [1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 2, 2, 2],
+    [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+]
 
 player = Player(100, height - 175)
 mob_group = pygame.sprite.Group()
 spikes_group = pygame.sprite.Group()
 level = Level(level_data)
 
+board = Board(20, 16)
+board.set_view(0, 0, 50)
+# декор
 sun = load_image('sunc.png', 'black')
 sun = pygame.transform.scale(sun, (150, 150))
 cloud = load_image('cloud.png', 'white')
