@@ -28,10 +28,7 @@ def menu():
     pygame.display.set_caption('2d game')
     screen.fill((221, 160, 221))
 
-    arrow = pygame.image.load('data_for_menu/i.png')
-    arrow = pygame.transform.scale(arrow, (150, 75))
-    arrow.set_colorkey((255, 255, 255))
-    arrow_left = arrow.get_rect(bottomright=(400, 200))
+
 
     #pygame.draw.rect(screen, (152, 251, 152), (350, 300, 300, 100))
 
@@ -45,7 +42,6 @@ def menu():
     hero = pygame.transform.scale(hero, (60, 60))
 
     screen.blit(hero, (200, 500))
-    screen.blit(arrow, arrow_left)
     screen.blit(text, text_a)
     pygame.display.flip()
     running = True
