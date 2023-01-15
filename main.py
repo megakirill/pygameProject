@@ -80,7 +80,7 @@ def load_image(name, colorkey=None):
 # сторона плитки
 tile_size = 50
 # закончилась ли игра
-game_over = False
+game_over = 0
 
 
 class Button():
@@ -188,11 +188,15 @@ class Player():
 
             # проверка на взаимодействия с мобами
             if pygame.sprite.spritecollide(self, mob_group, False):
-                game_over = True
+                game_over = -1
 
             # проверка на взаимодействия с шипами
             if pygame.sprite.spritecollide(self, spikes_group, False):
-                game_over = True
+                game_over = -1
+
+            # проверка на взаимодействия с вратами
+            if pygame.sprite.spritecollide(self, gates_group, False):
+                game_over = 1
 
             # обновление координат
             self.rect.x += delta_x
@@ -211,7 +215,7 @@ class Player():
             if self.rect.top < 0:
                 self.rect.top = 0
                 delta_x = 0
-        elif game_over:
+        elif game_over == -1:
             self.player_img = self.ghost_img
             if self.rect.y > 200:
                 self.rect.y -= 5
@@ -251,6 +255,16 @@ class Spikes(pygame.sprite.Sprite):
         self.rect.y = y
 
 
+class Gates(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = load_image('gates.png')
+        self.image = pygame.transform.scale(self.image, (50, 75))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
+
 # класс для создания уровня
 class Level():
     def __init__(self, data):
@@ -281,6 +295,9 @@ class Level():
                 if tile == 4:
                     spikes = Spikes(col_count * tile_size, row_count * tile_size + 25)
                     spikes_group.add(spikes)
+                if tile == 5:
+                    gates = Gates(col_count * tile_size, row_count * tile_size - 25)
+                    gates_group.add(gates)
                 col_count += 1
             row_count += 1
 
@@ -290,29 +307,30 @@ class Level():
 
 
 # список с элементами для создания уровня
-# 0 - пустая клетка, 1 - клетка с землей, 2 - клетка с грязью, 3 - монстр, 4 - шипы
+# 0 - пустая клетка, 1 - клетка с землей, 2 - клетка с грязью, 3 - монстр, 4 - шипы, 5 - ворота
 level_data = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 3, 0, 0, 0, 0, 1, 1, 1, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5],
+    [0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 4, 0, 0, 0, 0, 1, 1, 1, 1],
     [0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 3, 0, 0, 0, 0],
+    [2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 4, 0, 0, 0, 0],
     [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 4, 2, 2],
-    [0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 4, 0, 0, 0, 1, 2, 2],
-    [4, 4, 0, 4, 1, 2, 4, 4, 4, 4, 4, 4, 2, 1, 4, 4, 4, 2, 2, 2],
-    [1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 2, 2, 2],
+    [0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 2, 2],
+    [0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 2, 2],
+    [0, 0, 0, 0, 1, 2, 4, 4, 4, 4, 4, 4, 2, 1, 0, 0, 0, 0, 2, 2],
+    [1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2, 2],
     [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
 ]
 
 player = Player(100, height - 175)
 mob_group = pygame.sprite.Group()
 spikes_group = pygame.sprite.Group()
+gates_group = pygame.sprite.Group()
 level = Level(level_data)
 
 board = Board(20, 16)
@@ -343,10 +361,11 @@ while running:
     screen.blit(cloud3, (800, 50))
     screen.blit(cloud4, (200, 50))
     level.create()
-    if game_over == False:
+    if game_over == 0:
         mob_group.update()
     mob_group.draw(screen)
     spikes_group.draw(screen)
+    gates_group.draw(screen)
 
     game_over = player.update(game_over)
 
