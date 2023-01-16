@@ -335,12 +335,10 @@ elif dif == 'hard':
         [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
     ]
 
-
 pygame.init()
 
 clock = pygame.time.Clock()
 fps = 60
-
 
 pygame.display.set_caption('2d game')
 
@@ -379,10 +377,14 @@ while running:
     if game_over == -1:
         if start.finish_menu(screen) == -1:
             player.reset(100, height - 175)
-            print(1)
+            game_over = 0
+    if game_over == 1:
+        if start.finish_menu(screen) == -1:
+            player.reset(100, height - 175)
             game_over = 0
     mob_group.draw(screen)
     spikes_group.draw(screen)
+    gates_group.draw(screen)
     game_over = player.update(game_over)
     pygame.display.update()
 pygame.quit()
