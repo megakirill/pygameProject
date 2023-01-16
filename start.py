@@ -28,11 +28,11 @@ def menu():
     pygame.display.set_caption('2d game')
     screen.fill((221, 160, 221))
 
-
-
     #pygame.draw.rect(screen, (152, 251, 152), (350, 300, 300, 100))
 
     pygame.display.flip()
+
+    # Подгрузка картинок с текстом
 
     text = pygame.image.load('data_for_menu/text.png')
     text = pygame.transform.scale(text, (300, 75))
@@ -52,6 +52,7 @@ def menu():
                 pygame.quit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = event.pos
+                # При наведении кнокпи с текстом выделяются
                 if pos[0] >= 340 and pos[0] <= 645 and pos[1] >= 325 and pos[1] <= 400:
                     running = False
                     screen.fill((221, 160, 221))
@@ -131,8 +132,10 @@ def menu():
     return level
 
 
+# создание послесмертного меню
 def finish_menu(screen):
     pygame.draw.rect(screen, (192, 64, 0), (400, 200, 175, 245))
+    # отрисовка меню
     f1 = pygame.font.Font(None, 25)
     text1 = f1.render('Меню', True,
                       (252, 168, 159))
@@ -154,6 +157,7 @@ def finish_menu(screen):
         f1 = pygame.font.Font(None, 25)
         text1 = f1.render('Меню', True,
                           (252, 168, 159))
+        # Отрисовка текста кнопок
         screen.blit(text1, (467, 235))
         screen.blit(text2, (427, 290))
         screen.blit(text3, (427, 330))
@@ -163,6 +167,7 @@ def finish_menu(screen):
                 pygame.quit()
             if event.type == pygame.MOUSEMOTION:
                 pos = event.pos
+                # При наведении на кнопку она загорается, красиво
                 if pos[0] > 425 and pos[1] > 286 and pos[0] < 549 and pos[1] < 307:
                     f2 = pygame.font.Font(None, 25)
                     text2 = f1.render('Играть заново', True,
@@ -189,8 +194,11 @@ def finish_menu(screen):
                                       (252, 168, 159))
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = event.pos
+                # Проверка на нажатие кнопки
                 if pos[0] > 426 and pos[1] > 370 and pos[0] < 553 and pos[1] < 384:
+                    # выход из игры
                     pygame.quit()
                 if pos[0] > 425 and pos[1] > 286 and pos[0] < 549 and pos[1] < 307:
+                    # по нажатию кнопки игра возобновляется
                     return -1
         pygame.display.flip()
